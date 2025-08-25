@@ -85,3 +85,61 @@ SELECT c_codivenda Cod_Venda,
 FROM comclien
 WHERE n_numeclien = comvenda.n_numeclien) Nome_Cliente
 FROM comvenda;
+
+/* Utilizando JOINS */
+SELECT c_codiclien, c_razaclien, c_codivenda Cod_Venda
+FROM comvenda, comclien
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+ORDER BY c_razaclien;
+
+/* A mesma consulta de cima, só que mais complexa */
+SELECT c_codiclien, c_razaclien, c_codivenda Cod_Venda
+FROM comvenda
+JOIN comclien ON comvenda.n_numeclien = comclien.n_numeclien
+ORDER BY c_razaclien;
+
+-- Criando Tabelas por meio de SELECT
+-- Cria uma tabela de backup 'comclien_bkp' apenas com os clientes do estado de São Paulo (c_estaclien = 'SP')
+CREATE TABLE comclien_bkp as(
+    SELECT *
+    FROM comclien
+    WHERE c_estaclien = 'SP'
+);
+
+-- Inserindo registros por meio de SELECT
+-- Antes, criando a tabela:
+CREATE TABLE comcontato(
+    n_numecontato INT NOT NULL AUTO_INCREMENT,
+    c_nomecontato VARCHAR(200),
+    c_fonecontato VARCHAR(30),
+    c_cidacontato VARCHAR(200),
+    c_estacontato VARCHAR(2),
+    n_numeclien INT,
+    PRIMARY KEY(n_numecontato)
+);
+
+SELECT * FROM comcontato; /* Verificando que a tabela está vazia */
+
+-- Agora, populando as colunas da tabela 'comcontato' com as informações que temos na tabela 'comclien'
+INSERT INTO comcontato(
+SELECT n_numeclien,
+c_nomeclien,
+c_foneclien,
+c_cidaclien,
+c_estaclien,
+n_numeclien
+FROM comclien);
+
+-- Alterando registros por meio de um SELECT
+-- Alteração de registros na tabela comcontato com base em dados de outra tabela, a comclien_bkp
+UPDATE comcontato SET c_cidacontato  =  'LONDRINA', c_estacontato = 'PR'
+WHERE n_numeclien IN (
+    SELECT n_numeclien 
+    FROM comclien_bkp);
+
+-- Deletando registros por meio de SELECT
+-- Excluindo registros da tabela comcontato (contatos) que não estão relacionados a nenhuma venda na tabela comvenda.
+DELETE FROM comcontato
+WHERE n_numeclien NOT IN (
+    SELECT n_numeclien
+    FROM comvenda);
